@@ -5,6 +5,6 @@ import org.springframework.data.repository.CrudRepository;
 
 public interface LogJDBCRepository extends CrudRepository<LogEntity, String> {
     Iterable<LogEntity> findAllByActive(Boolean active);
-    Iterable<LogEntity> findAllByNameLogContains(String nameLog);
-    Iterable<LogEntity> findAllByIpLogContains(String ipLog);
+    Iterable<LogEntity> findAllByFileNameContains(String nameLog);
+    Iterable<LogEntity> findAllByIpContains(String ipLog);
 }

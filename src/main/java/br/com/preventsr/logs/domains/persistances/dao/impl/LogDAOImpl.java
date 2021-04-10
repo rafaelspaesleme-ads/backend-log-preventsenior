@@ -69,14 +69,14 @@ public class LogDAOImpl implements LogDAO {
     @Override
     public List<LogEntity> listAllByNameLog(String nameLog) {
         List<LogEntity> logEntities = new ArrayList<>();
-        logJDBCRepository.findAllByNameLogContains(nameLog).forEach(logEntities::add);
+        logJDBCRepository.findAllByFileNameContains(nameLog).forEach(logEntities::add);
         return logEntities;
     }
 
     @Override
     public List<LogEntity> listAllByIpLog(String ipLog) {
         List<LogEntity> logEntities = new ArrayList<>();
-        logJDBCRepository.findAllByIpLogContains(ipLog).forEach(logEntities::add);
+        logJDBCRepository.findAllByIpContains(ipLog).forEach(logEntities::add);
         return logEntities;
     }
 
