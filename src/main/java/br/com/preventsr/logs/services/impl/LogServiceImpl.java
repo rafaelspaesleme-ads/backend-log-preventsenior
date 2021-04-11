@@ -16,11 +16,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static br.com.preventsr.logs.utils.functions.ConvertionFunctions.*;
 import static br.com.preventsr.logs.utils.functions.FileFunctions.*;
@@ -42,52 +44,34 @@ public class LogServiceImpl implements LogService {
     @Override
     public ResponseDTO bulkInsertLog(FileLogDTO fileLogDTO) {
         try {
-            List<String> lines = new ArrayList<>();
             List<LogEntity> logEntities = new ArrayList<>();
-            List<LogDTO> logEntitieLogDTOList = new ArrayList<>();
+            AtomicReference<Boolean> save = new AtomicReference<>(false);
 
-            File file = convertMultiPartToFile(fileLogDTO.getMultipartFile());
+            File file = convertMultiPartToFile(fileLogDTO.getFile());
 
             BufferedReader dataFiles = new BufferedReader(new FileReader(file));
 
             String line;
 
             while ((line = dataFiles.readLine()) != null) {
-                lines.add(line);
+                logEntities.add(LogEntity.builder()
+                        .withFileName(file.getName())
+                        .withDateTime(convertStringInLocalDateTime(line.split(SPLIT_LOG)[0]))
+                        .withIp(line.split(SPLIT_LOG)[1])
+                        .withRequest(line.split(SPLIT_LOG)[2].replaceAll(Pattern.quote("\""), ""))
+                        .withStatusHttp(line.split(SPLIT_LOG)[3])
+                        .withUserAgent(line.split(SPLIT_LOG)[4].replaceAll(Pattern.quote("\""), ""))
+                        .withActive(true)
+                        .build());
             }
 
             //2020-01-01 00:00:11.763|192.168.234.82|"GET / HTTP/1.1"|200|"swcd (unknown version) CFNetwork/808.2.16 Darwin/15.6.0"
 
-            IntStream.range(0, lines.size()).forEach(index -> {
-                logEntities.get(index).setFileName(fileLogDTO.getNameFile().concat(convertDateInCode(LocalDateTime.now())));
-                logEntities.get(index).setDateTime(convertStringInLocalDateTime(lines.get(index).split(SPLIT_LOG)[0]));
-                logEntities.get(index).setIp(lines.get(index).split(SPLIT_LOG)[1]);
-                logEntities.get(index).setRequest(lines.get(index).split(SPLIT_LOG)[2]);
-                logEntities.get(index).setStatusHttp(lines.get(index).split(SPLIT_LOG)[3]);
-                logEntities.get(index).setUserAgent(lines.get(index).split(SPLIT_LOG)[4].replaceAll(Pattern.quote("\""), ""));
-                logEntities.get(index).setActive(true);
-            });
+            save.set(logDAO.bulkInsert(logEntities));
 
-
-            logDAO.bulkInsert(logEntities)
-                    .stream()
-                    .filter(LogEntity::getActive)
-                    .collect(Collectors.toList())
-                    .forEach(logEntity ->
-                            logEntitieLogDTOList.add(LogDTO.builder()
-                                    .withId(logEntity.getId())
-                                    .withFileName(logEntity.getFileName())
-                                    .withDateTime(logEntity.getDateTime())
-                                    .withIp(logEntity.getIp())
-                                    .withRequest(logEntity.getRequest())
-                                    .withStatusHttp(logEntity.getStatusHttp())
-                                    .withUserAgent(logEntity.getRequest())
-                                    .withActive(logEntity.getActive())
-                                    .build()));
-
-            return logEntitieLogDTOList.size() > 0
+            return save.get()
                     ? ResponseDTO.builder()
-                    .withData(logEntitieLogDTOList)
+                    .withData("Quantidade de dados adicionados: ".concat(String.valueOf(logEntities.size())))
                     .withError(null)
                     .withDateResponse(LocalDateTime.now())
                     .withMessage("Logs em massa cadastrados com sucesso!")

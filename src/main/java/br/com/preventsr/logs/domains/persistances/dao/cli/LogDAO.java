@@ -6,7 +6,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface LogDAO {
-    List<LogEntity> bulkInsert(List<LogEntity> logEntityList);
+    Boolean bulkInsert(List<LogEntity> logEntityList);
+    Boolean bulkInsert(LogEntity logEntity);
     Boolean insertOrEditLogDefault(LogEntity logEntity);
     Boolean insertOrEditLogCustom(LogEntity logEntity);
     List<LogEntity> listAllLog();

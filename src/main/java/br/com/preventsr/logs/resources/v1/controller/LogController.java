@@ -56,7 +56,7 @@ public class LogController {
     }
 
     @CrossOrigin
-    @GetMapping(value = "/delete-by/{id}")
+    @DeleteMapping(value = "/delete-by/{id}")
     public ResponseEntity<ResponseDTO> deleteById(@PathVariable String id) {
         ResponseDTO responseDTO = logService.deleteById(id);
         return ResponseEntity.status(responseDTO.getStatusHttp()).body(responseDTO);
