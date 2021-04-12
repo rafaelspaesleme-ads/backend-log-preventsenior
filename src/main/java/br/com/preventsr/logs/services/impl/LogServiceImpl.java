@@ -68,6 +68,8 @@ public class LogServiceImpl implements LogService {
 
             save.set(logDAO.bulkInsert(logEntities));
 
+            file.delete();
+
             return save.get()
                     ? ResponseDTO.builder()
                     .withData("Quantidade de dados adicionados: ".concat(String.valueOf(logEntities.size())))
@@ -92,7 +94,7 @@ public class LogServiceImpl implements LogService {
                     .withError(e.getCause())
                     .withDateResponse(LocalDateTime.now())
                     .withMessage("Lista vazia.")
-                    .withStatusHttp(FORBIDDEN.value())
+                    .withStatusHttp(NOT_FOUND.value())
                     .build();
         }
 

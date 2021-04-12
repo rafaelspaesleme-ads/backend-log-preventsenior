@@ -4,11 +4,31 @@ import br.com.preventsr.logs.resources.v1.dto.FileLogDTO;
 import br.com.preventsr.logs.resources.v1.dto.LogDTO;
 import br.com.preventsr.logs.resources.v1.dto.ResponseDTO;
 import br.com.preventsr.logs.services.cli.LogService;
+import br.com.preventsr.logs.utils.functions.TemplatesFunction;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
 
 @RestController
 @RequestMapping(value = "/logs")
+@ApiOperation(value = "Controle de reauisições e respostas do backend de Logs.")
+@ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Sucesso no envio ou retorno de requisição."),
+        @ApiResponse(code = 201, message = "Dados enviados na requisição cadastrado com sucesso!"),
+        @ApiResponse(code = 202, message = "Dado enviado na requisição foi aceito para exclusão."),
+        @ApiResponse(code = 204, message = "Não há conteudo para ser retornado na resposta da requisição."),
+        @ApiResponse(code = 304, message = "Não foi possivel atualizar dados enviados na requisição."),
+        @ApiResponse(code = 404, message = "Arquivo enviado na requisição não funciona ou esta invalido."),
+        @ApiResponse(code = 406, message = "Não foi aceito para exclusão, o dado enviado na requisição."),
+        @ApiResponse(code = 500, message = "Não foi possivel retornar dados do servidor."),
+        @ApiResponse(code = 501, message = "Não foi possivel cadastrar dados enviados na requisição."),
+})
 public class LogController {
     private final LogService logService;
 
@@ -17,9 +37,12 @@ public class LogController {
     }
 
     @CrossOrigin
-    @PostMapping(value = "/upload")
-    public ResponseEntity<ResponseDTO> uploadLog(@ModelAttribute FileLogDTO fileLogDTO) {
-        ResponseDTO responseDTO = logService.bulkInsertLog(fileLogDTO);
+    @PostMapping(value = "/upload", consumes = {
+            MediaType.APPLICATION_JSON_VALUE,
+            MediaType.MULTIPART_FORM_DATA_VALUE
+    })
+    public ResponseEntity<ResponseDTO> uploadLog(@RequestPart(value = "file") MultipartFile file) {
+        ResponseDTO responseDTO = logService.bulkInsertLog(FileLogDTO.builder().withFile(file).withSizeFile(file.getSize()).build());
         return ResponseEntity.status(responseDTO.getStatusHttp()).body(responseDTO);
     }
 

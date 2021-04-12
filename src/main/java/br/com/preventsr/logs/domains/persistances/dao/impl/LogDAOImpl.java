@@ -82,17 +82,17 @@ public class LogDAOImpl implements LogDAO {
 
     @Override
     public Page<LogEntity> listAllByActiveLog(Integer page, Integer linesPerPage, String orderBy, String direction, Long limited) {
-        return new PageImpl<>(logRepository.findAllByActive(true, buildPageable(page, linesPerPage, orderBy, direction)).stream().limit(limited).collect(Collectors.toList()));
+        return new PageImpl<>(logJDBCRepository.findAllByActive(true, buildPageable(page, linesPerPage, orderBy, direction)).stream().limit(limited).collect(Collectors.toList()));
     }
 
     @Override
     public Page<LogEntity> listAllByUserAgentLog(String userAgent, Integer page, Integer linesPerPage, String orderBy, String direction, Long limited) {
-        return new PageImpl<>(logRepository.findAllByUserAgentContains(userAgent, buildPageable(page, linesPerPage, orderBy, direction)).stream().limit(limited).collect(Collectors.toList()));
+        return new PageImpl<>(logJDBCRepository.findAllByUserAgentContains(userAgent, buildPageable(page, linesPerPage, orderBy, direction)).stream().limit(limited).collect(Collectors.toList()));
     }
 
     @Override
     public Page<LogEntity> listAllByIpLog(String ipLog, Integer page, Integer linesPerPage, String orderBy, String direction, Long limited) {
-        return new PageImpl<>(logRepository.findAllByIpContains(ipLog, buildPageable(page, linesPerPage, orderBy, direction)).stream().limit(limited).collect(Collectors.toList()));
+        return new PageImpl<>(logJDBCRepository.findAllByIpContains(ipLog, buildPageable(page, linesPerPage, orderBy, direction)).stream().limit(limited).collect(Collectors.toList()));
     }
 
     @Override
