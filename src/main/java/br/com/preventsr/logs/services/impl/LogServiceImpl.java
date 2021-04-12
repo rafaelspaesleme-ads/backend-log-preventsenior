@@ -165,10 +165,10 @@ public class LogServiceImpl implements LogService {
     }
 
     @Override
-    public ResponseDTO listLogByNameContains(String name, Integer page, Integer linesPerPage, String orderBy, String direction, Long limited) {
+    public ResponseDTO listLogByUserAgentContains(String userAgent, Integer page, Integer linesPerPage, String orderBy, String direction, Long limited) {
         List<LogDTO> logEntitieLogDTOList = new ArrayList<>();
 
-        logDAO.listAllByNameLog(name, page, linesPerPage, orderBy, direction, limited)
+        logDAO.listAllByUserAgentLog(userAgent, page, linesPerPage, orderBy, direction, limited)
                 .stream()
                 .filter(LogEntity::getActive)
                 .collect(Collectors.toList())
@@ -190,14 +190,14 @@ public class LogServiceImpl implements LogService {
                 .withData(new PageImpl<>(logEntitieLogDTOList))
                 .withError(null)
                 .withDateResponse(LocalDateTime.now())
-                .withMessage("Consulta de logs do nome " + name + " retornado com sucesso!")
+                .withMessage("Consulta de logs do user agent " + userAgent + " retornado com sucesso!")
                 .withStatusHttp(OK.value())
                 .build()
                 : ResponseDTO.builder()
                 .withData(null)
                 .withError(NO_CONTENT.getReasonPhrase())
                 .withDateResponse(LocalDateTime.now())
-                .withMessage("Não há logs cadastrados para o nome " + name + ".")
+                .withMessage("Não há logs cadastrados para o user agent " + userAgent + ".")
                 .withStatusHttp(NO_CONTENT.value())
                 .build();
     }

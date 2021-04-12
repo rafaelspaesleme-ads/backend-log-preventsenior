@@ -10,6 +10,7 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -81,20 +82,17 @@ public class LogDAOImpl implements LogDAO {
 
     @Override
     public Page<LogEntity> listAllByActiveLog(Integer page, Integer linesPerPage, String orderBy, String direction, Long limited) {
-        PageRequest pageRequest = PageRequest.of(page, linesPerPage, Sort.Direction.valueOf(direction), orderBy);
-        return new PageImpl<>(logJDBCRepository.findAllByActive(true, pageRequest).stream().limit(limited).collect(Collectors.toList()));
+        return new PageImpl<>(logRepository.findAllByActive(true, buildPageable(page, linesPerPage, orderBy, direction)).stream().limit(limited).collect(Collectors.toList()));
     }
 
     @Override
-    public Page<LogEntity> listAllByNameLog(String nameLog, Integer page, Integer linesPerPage, String orderBy, String direction, Long limited) {
-        PageRequest pageRequest = PageRequest.of(page, linesPerPage, Sort.Direction.valueOf(direction), orderBy);
-        return new PageImpl<>(logJDBCRepository.findAllByFileNameContains(nameLog, pageRequest).stream().limit(limited).collect(Collectors.toList()));
+    public Page<LogEntity> listAllByUserAgentLog(String userAgent, Integer page, Integer linesPerPage, String orderBy, String direction, Long limited) {
+        return new PageImpl<>(logRepository.findAllByUserAgentContains(userAgent, buildPageable(page, linesPerPage, orderBy, direction)).stream().limit(limited).collect(Collectors.toList()));
     }
 
     @Override
     public Page<LogEntity> listAllByIpLog(String ipLog, Integer page, Integer linesPerPage, String orderBy, String direction, Long limited) {
-        PageRequest pageRequest = PageRequest.of(page, linesPerPage, Sort.Direction.valueOf(direction), orderBy);
-        return new PageImpl<>(logJDBCRepository.findAllByIpContains(ipLog, pageRequest).stream().limit(limited).collect(Collectors.toList()));
+        return new PageImpl<>(logRepository.findAllByIpContains(ipLog, buildPageable(page, linesPerPage, orderBy, direction)).stream().limit(limited).collect(Collectors.toList()));
     }
 
     @Override
@@ -111,5 +109,9 @@ public class LogDAOImpl implements LogDAO {
             log.error(e.getMessage());
             return false;
         }
+    }
+
+    private PageRequest buildPageable(Integer page, Integer linesPerPage, String orderBy, String direction) {
+        return PageRequest.of(page, linesPerPage, Sort.Direction.valueOf(direction), orderBy);
     }
 }

@@ -13,7 +13,7 @@ public interface LogDAO {
     Boolean insertOrEditLogCustom(LogEntity logEntity);
     List<LogEntity> listAllLog();
     Page<LogEntity> listAllByActiveLog(Integer page, Integer linesPerPage, String orderBy, String direction, Long limited);
-    Page<LogEntity> listAllByNameLog(String nameLog, Integer page, Integer linesPerPage, String orderBy, String direction, Long limited);
+    Page<LogEntity> listAllByUserAgentLog(String userAgent, Integer page, Integer linesPerPage, String orderBy, String direction, Long limited);
     Page<LogEntity> listAllByIpLog(String ipLog, Integer page, Integer linesPerPage, String orderBy, String direction, Long limited);
     Optional<LogEntity> findByIdLog(String idLog);
     Boolean deleteLog(String idLog);

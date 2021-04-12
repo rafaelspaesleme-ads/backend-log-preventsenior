@@ -38,15 +38,13 @@ public class LogController {
             @RequestParam(required = false, value = "orderBy") String orderBy,
             @RequestParam(required = false, value = "direction") String direction,
             @RequestParam(required = false, value = "limited") Long limited,
-            @RequestParam(required = false, value = "nameLog") String nameLog,
+            @RequestParam(required = false, value = "userAgent") String userAgent,
             @RequestParam(required = false, value = "ip") String ip) {
 
-        //, , , ,
-
-        if (nameLog != null && ip == null) {
-            ResponseDTO responseDTO = logService.listLogByNameContains(nameLog, page, linesPerPage, orderBy, direction, limited);
+        if (userAgent != null && ip == null) {
+            ResponseDTO responseDTO = logService.listLogByUserAgentContains(userAgent, page, linesPerPage, orderBy, direction, limited);
             return ResponseEntity.status(responseDTO.getStatusHttp()).body(responseDTO);
-        } else if (ip != null && nameLog == null) {
+        } else if (ip != null && userAgent == null) {
             ResponseDTO responseDTO = logService.listLogByIpContains(ip, page, linesPerPage, orderBy, direction, limited);
             return ResponseEntity.status(responseDTO.getStatusHttp()).body(responseDTO);
         } else {
