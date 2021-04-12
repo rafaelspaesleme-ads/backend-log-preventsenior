@@ -8,6 +8,7 @@ import br.com.preventsr.logs.resources.v1.dto.ResponseDTO;
 import br.com.preventsr.logs.services.cli.LogService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -16,10 +17,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -101,7 +100,6 @@ public class LogServiceImpl implements LogService {
 
     @Override
     public ResponseDTO saveOrUpdateLog(LogDTO logDTO) {
-        List<LogDTO> logEntitieLogDTOList = new ArrayList<>();
 
         Boolean save = logDAO.insertOrEditLogDefault(LogEntity.builder()
                 .withId(logDTO.getId())
@@ -110,32 +108,16 @@ public class LogServiceImpl implements LogService {
                 .withIp(logDTO.getIp())
                 .withRequest(logDTO.getRequest())
                 .withStatusHttp(logDTO.getStatusHttp())
-                .withUserAgent(logDTO.getRequest())
+                .withUserAgent(logDTO.getUserAgent())
                 .withActive(logDTO.getActive())
                 .build());
 
-        if (save) {
-            logDAO.listAllByActiveLog()
-                    .forEach(logEntity -> {
-                        logEntitieLogDTOList.add(LogDTO.builder()
-                                .withId(logEntity.getId())
-                                .withFileName(logEntity.getFileName())
-                                .withDateTime(logEntity.getDateTime())
-                                .withIp(logEntity.getIp())
-                                .withRequest(logEntity.getRequest())
-                                .withStatusHttp(logEntity.getStatusHttp())
-                                .withUserAgent(logEntity.getRequest())
-                                .withActive(logEntity.getActive())
-                                .build());
-                    });
-        }
-
-        return logEntitieLogDTOList.size() > 0
+        return save
                 ? ResponseDTO.builder()
-                .withData(logEntitieLogDTOList)
+                .withData(logDTO.getId())
                 .withError(null)
                 .withDateResponse(LocalDateTime.now())
-                .withMessage(customMsgSuccess("Logs", logDTO.getId() == null ? "cadastrado" : "atualizado"))
+                .withMessage(customMsgSuccess("Log", logDTO.getId() == null ? "cadastrado" : "atualizado"))
                 .withStatusHttp(logDTO.getId() == null ? CREATED.value() : OK.value())
                 .build()
                 : ResponseDTO.builder()
@@ -148,10 +130,10 @@ public class LogServiceImpl implements LogService {
     }
 
     @Override
-    public ResponseDTO listLogActive() {
+    public ResponseDTO listLogActive(Integer page, Integer linesPerPage, String orderBy, String direction, Long limited) {
         List<LogDTO> logEntitieLogDTOList = new ArrayList<>();
 
-        logDAO.listAllByActiveLog()
+        logDAO.listAllByActiveLog(page, linesPerPage, orderBy, direction, limited)
                 .forEach(logEntity -> {
                     logEntitieLogDTOList.add(LogDTO.builder()
                             .withId(logEntity.getId())
@@ -160,14 +142,14 @@ public class LogServiceImpl implements LogService {
                             .withIp(logEntity.getIp())
                             .withRequest(logEntity.getRequest())
                             .withStatusHttp(logEntity.getStatusHttp())
-                            .withUserAgent(logEntity.getRequest())
+                            .withUserAgent(logEntity.getUserAgent())
                             .withActive(logEntity.getActive())
                             .build());
                 });
 
         return logEntitieLogDTOList.size() > 0
                 ? ResponseDTO.builder()
-                .withData(logEntitieLogDTOList)
+                .withData(new PageImpl<>(logEntitieLogDTOList))
                 .withError(null)
                 .withDateResponse(LocalDateTime.now())
                 .withMessage("Lista de logs retornado com sucesso!")
@@ -183,10 +165,10 @@ public class LogServiceImpl implements LogService {
     }
 
     @Override
-    public ResponseDTO listLogByNameContains(String name) {
+    public ResponseDTO listLogByNameContains(String name, Integer page, Integer linesPerPage, String orderBy, String direction, Long limited) {
         List<LogDTO> logEntitieLogDTOList = new ArrayList<>();
 
-        logDAO.listAllByNameLog(name)
+        logDAO.listAllByNameLog(name, page, linesPerPage, orderBy, direction, limited)
                 .stream()
                 .filter(LogEntity::getActive)
                 .collect(Collectors.toList())
@@ -198,14 +180,14 @@ public class LogServiceImpl implements LogService {
                             .withIp(logEntity.getIp())
                             .withRequest(logEntity.getRequest())
                             .withStatusHttp(logEntity.getStatusHttp())
-                            .withUserAgent(logEntity.getRequest())
+                            .withUserAgent(logEntity.getUserAgent())
                             .withActive(logEntity.getActive())
                             .build());
                 });
 
         return logEntitieLogDTOList.size() > 0
                 ? ResponseDTO.builder()
-                .withData(logEntitieLogDTOList)
+                .withData(new PageImpl<>(logEntitieLogDTOList))
                 .withError(null)
                 .withDateResponse(LocalDateTime.now())
                 .withMessage("Consulta de logs do nome " + name + " retornado com sucesso!")
@@ -221,10 +203,10 @@ public class LogServiceImpl implements LogService {
     }
 
     @Override
-    public ResponseDTO listLogByIpContains(String ip) {
+    public ResponseDTO listLogByIpContains(String ip, Integer page, Integer linesPerPage, String orderBy, String direction, Long limited) {
         List<LogDTO> logEntitieLogDTOList = new ArrayList<>();
 
-        logDAO.listAllByIpLog(ip)
+        logDAO.listAllByIpLog(ip, page, linesPerPage, orderBy, direction, limited)
                 .stream()
                 .filter(LogEntity::getActive)
                 .collect(Collectors.toList())
@@ -236,14 +218,14 @@ public class LogServiceImpl implements LogService {
                             .withIp(logEntity.getIp())
                             .withRequest(logEntity.getRequest())
                             .withStatusHttp(logEntity.getStatusHttp())
-                            .withUserAgent(logEntity.getRequest())
+                            .withUserAgent(logEntity.getUserAgent())
                             .withActive(logEntity.getActive())
                             .build());
                 });
 
         return logEntitieLogDTOList.size() > 0
                 ? ResponseDTO.builder()
-                .withData(logEntitieLogDTOList)
+                .withData(new PageImpl<>(logEntitieLogDTOList))
                 .withError(null)
                 .withDateResponse(LocalDateTime.now())
                 .withMessage("Consulta de logs na faixa de IP " + ip + " retornado com sucesso!")
@@ -271,7 +253,7 @@ public class LogServiceImpl implements LogService {
                         .withIp(log.get().getIp())
                         .withRequest(log.get().getRequest())
                         .withStatusHttp(log.get().getStatusHttp())
-                        .withUserAgent(log.get().getRequest())
+                        .withUserAgent(log.get().getUserAgent())
                         .withActive(log.get().getActive())
                         .build())
                 .withError(null)
@@ -291,27 +273,11 @@ public class LogServiceImpl implements LogService {
 
     @Override
     public ResponseDTO deleteById(String id) {
-        List<LogDTO> logEntitieLogDTOList = new ArrayList<>();
-
         Boolean delete = logDAO.deleteLog(id);
-
-        logDAO.listAllByActiveLog()
-                .forEach(logEntity -> {
-                    logEntitieLogDTOList.add(LogDTO.builder()
-                            .withId(logEntity.getId())
-                            .withFileName(logEntity.getFileName())
-                            .withDateTime(logEntity.getDateTime())
-                            .withIp(logEntity.getIp())
-                            .withRequest(logEntity.getRequest())
-                            .withStatusHttp(logEntity.getStatusHttp())
-                            .withUserAgent(logEntity.getRequest())
-                            .withActive(logEntity.getActive())
-                            .build());
-                });
 
         return delete
                 ? ResponseDTO.builder()
-                .withData(logEntitieLogDTOList)
+                .withData(id)
                 .withError(null)
                 .withDateResponse(LocalDateTime.now())
                 .withMessage("Item do ID " + id + " deletado com sucesso!")

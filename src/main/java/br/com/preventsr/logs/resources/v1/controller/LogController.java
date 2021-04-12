@@ -33,17 +33,24 @@ public class LogController {
     @CrossOrigin
     @GetMapping(value = "/list")
     public ResponseEntity<ResponseDTO> lists(
+            @RequestParam(required = true, value = "page") Integer page,
+            @RequestParam(required = true, value = "linesPerPage") Integer linesPerPage,
+            @RequestParam(required = false, value = "orderBy") String orderBy,
+            @RequestParam(required = false, value = "direction") String direction,
+            @RequestParam(required = false, value = "limited") Long limited,
             @RequestParam(required = false, value = "nameLog") String nameLog,
             @RequestParam(required = false, value = "ip") String ip) {
 
+        //, , , ,
+
         if (nameLog != null && ip == null) {
-            ResponseDTO responseDTO = logService.listLogByNameContains(nameLog);
+            ResponseDTO responseDTO = logService.listLogByNameContains(nameLog, page, linesPerPage, orderBy, direction, limited);
             return ResponseEntity.status(responseDTO.getStatusHttp()).body(responseDTO);
         } else if (ip != null && nameLog == null) {
-            ResponseDTO responseDTO = logService.listLogByIpContains(ip);
+            ResponseDTO responseDTO = logService.listLogByIpContains(ip, page, linesPerPage, orderBy, direction, limited);
             return ResponseEntity.status(responseDTO.getStatusHttp()).body(responseDTO);
         } else {
-            ResponseDTO responseDTO = logService.listLogActive();
+            ResponseDTO responseDTO = logService.listLogActive(page, linesPerPage, orderBy, direction, limited);
             return ResponseEntity.status(responseDTO.getStatusHttp()).body(responseDTO);
         }
     }

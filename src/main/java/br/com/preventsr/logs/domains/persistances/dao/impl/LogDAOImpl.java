@@ -6,11 +6,13 @@ import br.com.preventsr.logs.domains.persistances.repository.LogJDBCRepository;
 import br.com.preventsr.logs.domains.persistances.repository.LogRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 public class LogDAOImpl implements LogDAO {
@@ -78,24 +80,21 @@ public class LogDAOImpl implements LogDAO {
     }
 
     @Override
-    public List<LogEntity> listAllByActiveLog() {
-        List<LogEntity> logEntities = new ArrayList<>();
-        logJDBCRepository.findAllByActive(true).forEach(logEntities::add);
-        return logEntities;
+    public Page<LogEntity> listAllByActiveLog(Integer page, Integer linesPerPage, String orderBy, String direction, Long limited) {
+        PageRequest pageRequest = PageRequest.of(page, linesPerPage, Sort.Direction.valueOf(direction), orderBy);
+        return new PageImpl<>(logJDBCRepository.findAllByActive(true, pageRequest).stream().limit(limited).collect(Collectors.toList()));
     }
 
     @Override
-    public List<LogEntity> listAllByNameLog(String nameLog) {
-        List<LogEntity> logEntities = new ArrayList<>();
-        logJDBCRepository.findAllByFileNameContains(nameLog).forEach(logEntities::add);
-        return logEntities;
+    public Page<LogEntity> listAllByNameLog(String nameLog, Integer page, Integer linesPerPage, String orderBy, String direction, Long limited) {
+        PageRequest pageRequest = PageRequest.of(page, linesPerPage, Sort.Direction.valueOf(direction), orderBy);
+        return new PageImpl<>(logJDBCRepository.findAllByFileNameContains(nameLog, pageRequest).stream().limit(limited).collect(Collectors.toList()));
     }
 
     @Override
-    public List<LogEntity> listAllByIpLog(String ipLog) {
-        List<LogEntity> logEntities = new ArrayList<>();
-        logJDBCRepository.findAllByIpContains(ipLog).forEach(logEntities::add);
-        return logEntities;
+    public Page<LogEntity> listAllByIpLog(String ipLog, Integer page, Integer linesPerPage, String orderBy, String direction, Long limited) {
+        PageRequest pageRequest = PageRequest.of(page, linesPerPage, Sort.Direction.valueOf(direction), orderBy);
+        return new PageImpl<>(logJDBCRepository.findAllByIpContains(ipLog, pageRequest).stream().limit(limited).collect(Collectors.toList()));
     }
 
     @Override

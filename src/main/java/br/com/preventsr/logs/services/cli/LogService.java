@@ -7,9 +7,9 @@ import br.com.preventsr.logs.resources.v1.dto.ResponseDTO;
 public interface LogService {
     ResponseDTO bulkInsertLog(FileLogDTO fileLogDTO);
     ResponseDTO saveOrUpdateLog(LogDTO logDTO);
-    ResponseDTO listLogActive();
-    ResponseDTO listLogByNameContains(String name);
-    ResponseDTO listLogByIpContains(String ip);
+    ResponseDTO listLogActive(Integer page, Integer linesPerPage, String orderBy, String direction, Long limited);
+    ResponseDTO listLogByNameContains(String name, Integer page, Integer linesPerPage, String orderBy, String direction, Long limited);
+    ResponseDTO listLogByIpContains(String ip, Integer page, Integer linesPerPage, String orderBy, String direction, Long limited);
     ResponseDTO findById(String id);
     ResponseDTO deleteById(String id);
 
