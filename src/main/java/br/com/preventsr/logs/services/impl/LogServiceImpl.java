@@ -327,6 +327,52 @@ public class LogServiceImpl implements LogService {
                 .build();
     }
 
+    @Override
+    public ResponseDTO countHours(Long hours) {
+        try {
+            Long countLog = logDAO.countLogsCustomHours(hours);
+            return ResponseDTO.builder()
+                    .withData(countLog)
+                    .withError(null)
+                    .withDateResponse(LocalDateTime.now())
+                    .withMessage("Você tem " + countLog + " logs registrados nas últimas " + hours + " horas.")
+                    .withStatusHttp(OK.value())
+                    .build();
+
+        } catch (Exception e) {
+            return ResponseDTO.builder()
+                    .withData(null)
+                    .withError(e.getMessage())
+                    .withDateResponse(LocalDateTime.now())
+                    .withMessage("Não foi possivel retornar a quantidade de logs das ultimas " + hours + " horas.")
+                    .withStatusHttp(INTERNAL_SERVER_ERROR.value())
+                    .build();
+        }
+    }
+
+    @Override
+    public ResponseDTO countRequestAndHours(String request, Long hours) {
+        try {
+            Long countLog = logDAO.countLogsRequestCustomHours(request, hours);
+            return ResponseDTO.builder()
+                    .withData(countLog)
+                    .withError(null)
+                    .withDateResponse(LocalDateTime.now())
+                    .withMessage("Você tem " + countLog + " logs do verbo " + request + " registrados nas últimas " + hours + " horas.")
+                    .withStatusHttp(OK.value())
+                    .build();
+
+        } catch (Exception e) {
+            return ResponseDTO.builder()
+                    .withData(null)
+                    .withError(e.getMessage())
+                    .withDateResponse(LocalDateTime.now())
+                    .withMessage("Não foi possivel retornar a quantidade de logs do verbo " + request + ", das ultimas " + hours + " horas.")
+                    .withStatusHttp(INTERNAL_SERVER_ERROR.value())
+                    .build();
+        }
+    }
+
     private Boolean checkUpdate(LogDTO logDTO, LogEntity logEntity) {
         if (logDTO.getActive().equals(logEntity.getActive())
                 && logDTO.getDateTime().equals(logEntity.getDateTime())

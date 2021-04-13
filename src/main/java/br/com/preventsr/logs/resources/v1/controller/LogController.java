@@ -77,6 +77,20 @@ public class LogController {
     }
 
     @CrossOrigin
+    @GetMapping(value = "/count")
+    public ResponseEntity<ResponseDTO> countHours(
+            @RequestParam(required = true, value = "hours") Long hours,
+            @RequestParam(required = false, value = "request") String request) {
+        ResponseDTO responseDTO;
+        if (request == null) {
+            responseDTO = logService.countHours(hours);
+        } else {
+            responseDTO = logService.countRequestAndHours(request, hours);
+        }
+        return ResponseEntity.status(responseDTO.getStatusHttp()).body(responseDTO);
+    }
+
+    @CrossOrigin
     @GetMapping(value = "/select-by/{id}")
     public ResponseEntity<ResponseDTO> selectById(@PathVariable String id) {
         ResponseDTO responseDTO = logService.findById(id);

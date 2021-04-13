@@ -771,4 +771,88 @@ public class LogTest {
         Assert.assertEquals("Era para retornar FALSO", false, delete);
         Assert.assertEquals("Era para retornar status 406", 406, (int) responseDTO.getStatusHttp());
     }
+
+    @Test
+    public void countHours() throws IOException {
+        Faker faker = new Faker();
+
+        String name = "access_test_2.log";
+        String originalFileName = "access_test_2.log";
+        String contentType = "text/plain";
+        byte[] content = null;
+        File file = new File("access_test_2.log");
+        file.createNewFile();
+        Writer fw = new OutputStreamWriter(new FileOutputStream(file));
+        for (int i = 0; i <= 5000; i++) {
+            fw.write(LocalDateTime.now().toString().replace("T", " ") + "|" + faker
+                    .number()
+                    .numberBetween(192, 192) + "." + faker
+                    .number()
+                    .numberBetween(168, 168) + "." + faker
+                    .number()
+                    .numberBetween(0, 255) + "." + faker
+                    .number()
+                    .numberBetween(1, 255) + "|\"GET / HTTP/1.1\"|200|\"" + faker.starTrek() + "\"\n");
+        }
+        fw.close();
+
+        content = Files.readAllBytes(file.toPath());
+
+        MultipartFile result = new MockMultipartFile(name,
+                originalFileName, contentType, content);
+
+        logService.bulkInsertLog(FileLogDTO.builder().withSizeFile(result.getSize()).withFile(result).build());
+
+        file.delete();
+
+        Long log = logDAO.countLogsCustomHours(24L);
+
+        ResponseDTO responseDTO = logService.countHours(24L);
+
+        Assert.assertEquals("Era para retornar 5000", 5001, (long) log);
+
+        Assert.assertEquals("Era para retornar status 200", 200, (int) responseDTO.getStatusHttp());
+    }
+
+    @Test
+    public void countRequestPerHours() throws IOException {
+        Faker faker = new Faker();
+
+        String name = "access_test_2.log";
+        String originalFileName = "access_test_2.log";
+        String contentType = "text/plain";
+        byte[] content = null;
+        File file = new File("access_test_2.log");
+        file.createNewFile();
+        Writer fw = new OutputStreamWriter(new FileOutputStream(file));
+        for (int i = 0; i <= 5000; i++) {
+            fw.write(LocalDateTime.now().toString().replace("T", " ") + "|" + faker
+                    .number()
+                    .numberBetween(192, 192) + "." + faker
+                    .number()
+                    .numberBetween(168, 168) + "." + faker
+                    .number()
+                    .numberBetween(0, 255) + "." + faker
+                    .number()
+                    .numberBetween(1, 255) + "|\"" + (i % 2 == 0 ? "POST" : "GET") +" / HTTP/1.1\"|200|\"" + faker.starTrek() + "\"\n");
+        }
+        fw.close();
+
+        content = Files.readAllBytes(file.toPath());
+
+        MultipartFile result = new MockMultipartFile(name,
+                originalFileName, contentType, content);
+
+        logService.bulkInsertLog(FileLogDTO.builder().withSizeFile(result.getSize()).withFile(result).build());
+
+        file.delete();
+
+        Long log = logDAO.countLogsRequestCustomHours("GET", 24L);
+
+        ResponseDTO responseDTO = logService.countHours(24L);
+
+        Assert.assertEquals("Era para retornar 5000", 5001 / 2, (long) log);
+
+        Assert.assertEquals("Era para retornar status 200", 200, (int) responseDTO.getStatusHttp());
+    }
 }

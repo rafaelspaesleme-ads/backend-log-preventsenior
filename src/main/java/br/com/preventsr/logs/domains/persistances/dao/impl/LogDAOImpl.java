@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -109,6 +110,23 @@ public class LogDAOImpl implements LogDAO {
             log.error(e.getMessage());
             return false;
         }
+    }
+
+    @Override
+    public Long countLogsCustomHours(Long hours) {
+        return (long) logRepository
+                .findAllByActiveAndDateTimeBetween(true, LocalDateTime.now().minusHours(hours),
+                        LocalDateTime.now())
+                .size();
+    }
+
+    @Override
+    public Long countLogsRequestCustomHours(String request, Long hours) {
+        return (long) logRepository
+                .findAllByActiveAndRequestContainsAndDateTimeBetween(true, request,
+                        LocalDateTime.now().minusHours(hours),
+                        LocalDateTime.now())
+                .size();
     }
 
     private PageRequest buildPageable(Integer page, Integer linesPerPage, String orderBy, String direction) {
