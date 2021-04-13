@@ -104,7 +104,7 @@ public class LogDAOImpl implements LogDAO {
     public Boolean deleteLog(String idLog) {
         try {
             logJDBCRepository.deleteById(idLog);
-            return true;
+            return logJDBCRepository.findById(idLog).isEmpty();
         } catch (Exception e) {
             log.error(e.getMessage());
             return false;

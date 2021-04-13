@@ -53,20 +53,33 @@ public class LogServiceImpl implements LogService {
             String line;
 
             while ((line = dataFiles.readLine()) != null) {
-                logEntities.add(LogEntity.builder()
-                        .withFileName(file.getName())
-                        .withDateTime(convertStringInLocalDateTime(line.split(SPLIT_LOG)[0]))
-                        .withIp(line.split(SPLIT_LOG)[1])
-                        .withRequest(line.split(SPLIT_LOG)[2].replaceAll(Pattern.quote("\""), ""))
-                        .withStatusHttp(line.split(SPLIT_LOG)[3])
-                        .withUserAgent(line.split(SPLIT_LOG)[4].replaceAll(Pattern.quote("\""), ""))
-                        .withActive(true)
-                        .build());
+                String[] split = line.split(SPLIT_LOG);
+                if (split.length == 5) {
+                    logEntities.add(LogEntity.builder()
+                            .withFileName(file.getName())
+                            .withDateTime(convertStringInLocalDateTime(line.split(SPLIT_LOG)[0]))
+                            .withIp(line.split(SPLIT_LOG)[1])
+                            .withRequest(line.split(SPLIT_LOG)[2].replaceAll(Pattern.quote("\""), ""))
+                            .withStatusHttp(line.split(SPLIT_LOG)[3])
+                            .withUserAgent(line.split(SPLIT_LOG)[4].replaceAll(Pattern.quote("\""), ""))
+                            .withActive(true)
+                            .build());
+                } else {
+                    return ResponseDTO.builder()
+                            .withData(null)
+                            .withError("Informação invalida dentro do arquivo.")
+                            .withDateResponse(LocalDateTime.now())
+                            .withMessage("Lista vazia.")
+                            .withStatusHttp(NOT_FOUND.value())
+                            .build();
+                }
             }
 
-            //2020-01-01 00:00:11.763|192.168.234.82|"GET / HTTP/1.1"|200|"swcd (unknown version) CFNetwork/808.2.16 Darwin/15.6.0"
-
-            save.set(logDAO.bulkInsert(logEntities));
+            if (logEntities.size() > 0) {
+                save.set(logDAO.bulkInsert(logEntities));
+            } else {
+                save.set(false);
+            }
 
             file.delete();
 
@@ -102,17 +115,37 @@ public class LogServiceImpl implements LogService {
 
     @Override
     public ResponseDTO saveOrUpdateLog(LogDTO logDTO) {
+        Boolean save = false;
 
-        Boolean save = logDAO.insertOrEditLogDefault(LogEntity.builder()
-                .withId(logDTO.getId())
-                .withFileName(logDTO.getFileName())
-                .withDateTime(logDTO.getDateTime())
-                .withIp(logDTO.getIp())
-                .withRequest(logDTO.getRequest())
-                .withStatusHttp(logDTO.getStatusHttp())
-                .withUserAgent(logDTO.getUserAgent())
-                .withActive(logDTO.getActive())
-                .build());
+        if (logDTO != null) {
+            if (logDTO.getId() != null) {
+                AtomicReference<Boolean> update = new AtomicReference<>(false);
+                logDAO.findByIdLog(logDTO.getId()).ifPresent(logEntity -> {
+                    update.set(checkUpdate(logDTO, logEntity));
+                });
+
+                if (!update.get()) {
+                    return ResponseDTO.builder()
+                            .withData(null)
+                            .withError(NOT_MODIFIED.getReasonPhrase())
+                            .withDateResponse(LocalDateTime.now())
+                            .withMessage("Não há dados para serem alterados.")
+                            .withStatusHttp(NOT_MODIFIED.value())
+                            .build();
+                }
+            }
+
+            save = logDAO.insertOrEditLogDefault(LogEntity.builder()
+                    .withId(logDTO.getId())
+                    .withFileName(logDTO.getFileName())
+                    .withDateTime(logDTO.getDateTime())
+                    .withIp(logDTO.getIp())
+                    .withRequest(logDTO.getRequest())
+                    .withStatusHttp(logDTO.getStatusHttp())
+                    .withUserAgent(logDTO.getUserAgent())
+                    .withActive(logDTO.getActive())
+                    .build());
+        }
 
         return save
                 ? ResponseDTO.builder()
@@ -124,10 +157,10 @@ public class LogServiceImpl implements LogService {
                 .build()
                 : ResponseDTO.builder()
                 .withData(null)
-                .withError(logDTO.getId() == null ? NOT_IMPLEMENTED.getReasonPhrase() : NOT_MODIFIED.getReasonPhrase())
+                .withError(NOT_IMPLEMENTED.getReasonPhrase())
                 .withDateResponse(LocalDateTime.now())
-                .withMessage("Não foi possivel cadastrar logs em massa, pois a lista esta vazia.")
-                .withStatusHttp(logDTO.getId() == null ? NOT_IMPLEMENTED.value() : NOT_MODIFIED.value())
+                .withMessage("Não foi possivel cadastrar log.")
+                .withStatusHttp(NOT_IMPLEMENTED.value())
                 .build();
     }
 
@@ -292,5 +325,27 @@ public class LogServiceImpl implements LogService {
                 .withMessage("Ação para deletar item do ID " + id + " não foi aceito.")
                 .withStatusHttp(NOT_ACCEPTABLE.value())
                 .build();
+    }
+
+    private Boolean checkUpdate(LogDTO logDTO, LogEntity logEntity) {
+        if (logDTO.getActive().equals(logEntity.getActive())
+                && logDTO.getDateTime().equals(logEntity.getDateTime())
+                && logDTO.getFileName().equals(logEntity.getFileName())
+                && logDTO.getIp().equals(logEntity.getIp())
+                && logDTO.getRequest().equals(logEntity.getRequest())
+                && logDTO.getStatusHttp().equals(logEntity.getStatusHttp())
+                && logDTO.getUserAgent().equals(logEntity.getUserAgent())) {
+            return false;
+        } else if (logDTO.getActive().equals(logEntity.getActive())
+                || logDTO.getDateTime().equals(logEntity.getDateTime())
+                || logDTO.getFileName().equals(logEntity.getFileName())
+                || logDTO.getIp().equals(logEntity.getIp())
+                || logDTO.getRequest().equals(logEntity.getRequest())
+                || logDTO.getStatusHttp().equals(logEntity.getStatusHttp())
+                || logDTO.getUserAgent().equals(logEntity.getUserAgent())) {
+            return true;
+        } else {
+            return true;
+        }
     }
 }
