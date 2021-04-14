@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static br.com.preventsr.logs.utils.functions.ChecksFunctions.chkUpdate;
+import static br.com.preventsr.logs.utils.functions.ChecksFunctions.*;
 import static br.com.preventsr.logs.utils.functions.ConvertionFunctions.*;
 import static br.com.preventsr.logs.utils.functions.FileFunctions.*;
 import static br.com.preventsr.logs.utils.functions.MessagesFunctions.*;
@@ -55,6 +55,12 @@ public class LogServiceImpl implements LogService {
 
     @Value("${message.patch.nothing.modify}")
     private String msgNothingModify;
+
+    @Value("${message.patch.bad.request}")
+    private String msgBadRequest;
+
+    @Value("${message.patch.bad.status.http}")
+    private String msgBadStatusHttp;
 
     @Value("${message.patch.not.save}")
     private String msgNotSave;
@@ -149,6 +155,25 @@ public class LogServiceImpl implements LogService {
         Boolean save = false;
 
         if (logDTO != null) {
+            if (!chkRequest(logDTO.getRequest())) {
+                return ResponseDTO.builder()
+                        .withData(null)
+                        .withError(BAD_REQUEST.getReasonPhrase())
+                        .withDateResponse(LocalDateTime.now(ZoneId.of(ZONE_INFO)))
+                        .withMessage(msgBadRequest)
+                        .withStatusHttp(BAD_REQUEST.value())
+                        .build();
+            }
+            if (!chkStatusHttp(Integer.parseInt(logDTO.getStatusHttp()))) {
+                return ResponseDTO.builder()
+                        .withData(null)
+                        .withError(BAD_REQUEST.getReasonPhrase())
+                        .withDateResponse(LocalDateTime.now(ZoneId.of(ZONE_INFO)))
+                        .withMessage(msgBadStatusHttp)
+                        .withStatusHttp(BAD_REQUEST.value())
+                        .build();
+            }
+
             if (logDTO.getId() != null) {
                 AtomicReference<Boolean> update = new AtomicReference<>(false);
                 logDAO.findByIdLog(logDTO.getId()).ifPresent(logEntity -> {

@@ -160,6 +160,38 @@ public class LogTest {
     }
 
     @Test
+    public void saveInvalidRequest() {
+        ResponseDTO responseDTO = logService.saveOrUpdateLog(LogDTO.builder()
+                .withId(null)
+                .withActive(true)
+                .withDateTime(LocalDateTime.now())
+                .withFileName("acesso.log")
+                .withIp("192.168.0.86")
+                .withRequest("GET")
+                .withStatusHttp("986")
+                .withUserAgent("Mozilla Firefox")
+                .build());
+
+        Assert.assertEquals("Era para retornar status 400", 400, (int) responseDTO.getStatusHttp());
+    }
+
+    @Test
+    public void saveInvalidStatusHttp() {
+        ResponseDTO responseDTO = logService.saveOrUpdateLog(LogDTO.builder()
+                .withId(null)
+                .withActive(true)
+                .withDateTime(LocalDateTime.now())
+                .withFileName("acesso.log")
+                .withIp("192.168.0.86")
+                .withRequest("POZT")
+                .withStatusHttp("200")
+                .withUserAgent("Mozilla Firefox")
+                .build());
+
+        Assert.assertEquals("Era para retornar status 400", 400, (int) responseDTO.getStatusHttp());
+    }
+
+    @Test
     public void update() {
 
         LogEntity logEntity = logRepository.save(LogEntity.builder()

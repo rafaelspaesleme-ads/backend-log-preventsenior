@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static br.com.preventsr.logs.utils.functions.ChecksFunctions.chkLimited;
 import static br.com.preventsr.logs.utils.functions.ChecksFunctions.chkPageable;
 
 @Component
@@ -90,7 +91,7 @@ public class LogDAOImpl implements LogDAO {
             return new PageImpl<>(logJDBCRepository
                     .findAllByActive(true, chkPageable(page, linesPerPage, orderBy, direction))
                     .stream()
-                    .limit(limited)
+                    .limit(chkLimited(limited))
                     .collect(Collectors.toList()));
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -104,7 +105,7 @@ public class LogDAOImpl implements LogDAO {
             return new PageImpl<>(logJDBCRepository
                     .findAllByUserAgentContains(userAgent, chkPageable(page, linesPerPage, orderBy, direction))
                     .stream()
-                    .limit(limited)
+                    .limit(chkLimited(limited))
                     .collect(Collectors.toList()));
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -118,7 +119,7 @@ public class LogDAOImpl implements LogDAO {
             return new PageImpl<>(logJDBCRepository
                     .findAllByIpContains(ipLog, chkPageable(page, linesPerPage, orderBy, direction))
                     .stream()
-                    .limit(limited)
+                    .limit(chkLimited(limited))
                     .collect(Collectors.toList()));
         } catch (Exception e) {
             log.error(e.getMessage());
