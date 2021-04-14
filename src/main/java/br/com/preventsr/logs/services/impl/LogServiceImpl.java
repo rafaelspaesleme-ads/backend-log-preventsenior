@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static br.com.preventsr.logs.utils.functions.ChecksFunctions.*;
+import static br.com.preventsr.logs.utils.functions.ValidatorsFunctions.*;
 import static br.com.preventsr.logs.utils.functions.ConvertionFunctions.*;
 import static br.com.preventsr.logs.utils.functions.FileFunctions.*;
 import static br.com.preventsr.logs.utils.functions.MessagesFunctions.*;

@@ -4,12 +4,11 @@ import br.com.preventsr.logs.domains.entities.LogEntity;
 import br.com.preventsr.logs.resources.v1.dto.LogDTO;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ChecksFunctions {
+public class ValidatorsFunctions {
     public static Boolean chkUpdate(LogDTO logDTO, LogEntity logEntity) {
         if (logDTO.getActive().equals(logEntity.getActive())
                 && logDTO.getDateTime().equals(logEntity.getDateTime())

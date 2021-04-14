@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static br.com.preventsr.logs.utils.functions.ChecksFunctions.chkLimited;
-import static br.com.preventsr.logs.utils.functions.ChecksFunctions.chkPageable;
+import static br.com.preventsr.logs.utils.functions.ValidatorsFunctions.chkLimited;
+import static br.com.preventsr.logs.utils.functions.ValidatorsFunctions.chkPageable;
 
 @Component
 public class LogDAOImpl implements LogDAO {
