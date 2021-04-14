@@ -24,7 +24,7 @@ public class LogEntity implements Serializable {
     private String id;
     @Column(name = "file_name")
     private String fileName;
-    @Column(name = "dateTime")
+    @Column(name = "date_time")
     private LocalDateTime dateTime;
     @Column(name = "ip")
     private String ip;

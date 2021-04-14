@@ -12,7 +12,5 @@ public interface LogService {
     ResponseDTO listLogByIpContains(String ip, Integer page, Integer linesPerPage, String orderBy, String direction, Long limited);
     ResponseDTO findById(String id);
     ResponseDTO deleteById(String id);
-    ResponseDTO countHours(Long hours);
-
-    ResponseDTO countRequestAndHours(String request, Long hours);
+    ResponseDTO countLogsByRequest(String request);
 }

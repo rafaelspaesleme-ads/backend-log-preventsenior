@@ -26,7 +26,7 @@ public class TemplatesFunction {
 
     public String initalPageHtml() {
         try {
-            return "<html>" +
+            return "<html lang='pt-BR'>" +
                     "<body>" +
                     "<div style='padding=50px;text-align=justify;font-family: Tahoma, sans-serif;'>" +
                     "<h1>" +

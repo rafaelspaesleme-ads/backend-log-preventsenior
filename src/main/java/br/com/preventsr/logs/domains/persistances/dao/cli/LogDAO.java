@@ -17,6 +17,5 @@ public interface LogDAO {
     Page<LogEntity> listAllByIpLog(String ipLog, Integer page, Integer linesPerPage, String orderBy, String direction, Long limited);
     Optional<LogEntity> findByIdLog(String idLog);
     Boolean deleteLog(String idLog);
-    Long countLogsCustomHours(Long hours);
-    Long countLogsRequestCustomHours(String request, Long hours);
+    Long countLogsByRequest(String request);
 }
