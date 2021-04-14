@@ -8,6 +8,8 @@ import br.com.preventsr.logs.resources.v1.dto.ResponseDTO;
 import br.com.preventsr.logs.services.cli.LogService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
 
@@ -24,16 +26,44 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static br.com.preventsr.logs.utils.functions.ChecksFunctions.chkUpdate;
 import static br.com.preventsr.logs.utils.functions.ConvertionFunctions.*;
 import static br.com.preventsr.logs.utils.functions.FileFunctions.*;
-import static br.com.preventsr.logs.utils.functions.MessagesFunctions.customMsgSuccess;
+import static br.com.preventsr.logs.utils.functions.MessagesFunctions.*;
+import static br.com.preventsr.logs.utils.functions.MessagesFunctions.msgConsult;
 import static org.springframework.http.HttpStatus.*;
 
+@PropertySource(value = "classpath:messages/messages.properties", encoding = "UTF-8")
 @Service
 public class LogServiceImpl implements LogService {
 
     private static final Logger log = LoggerFactory.getLogger(LogServiceImpl.class);
     private static final String SPLIT_LOG = Pattern.quote("|");
+    private static final String ZONE_INFO = "America/Sao_Paulo";
+
+    @Value("${message.post.invalidated.inside.file}")
+    private String msgInvalidatedInsideFile;
+
+    @Value("${message.get.list.empty}")
+    private String msgListEmpty;
+
+    @Value("${message.post.bulk.insert.success}")
+    private String msgBulkInsertSuccess;
+
+    @Value("${message.post.bulk.insert.fail.list.empty}")
+    private String msgBulkInsertFailListEmpty;
+
+    @Value("${message.patch.nothing.modify}")
+    private String msgNothingModify;
+
+    @Value("${message.patch.not.save}")
+    private String msgNotSave;
+
+    @Value("${message.get.list.success}")
+    private String msgListSuccess;
+
+    @Value("${message.get.list.not.content}")
+    private String msgListNotContent;
 
     private final LogDAO logDAO;
 
@@ -68,9 +98,9 @@ public class LogServiceImpl implements LogService {
                 } else {
                     return ResponseDTO.builder()
                             .withData(null)
-                            .withError("Informação invalida dentro do arquivo.")
-                            .withDateResponse(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))
-                            .withMessage("Lista vazia.")
+                            .withError(msgInvalidatedInsideFile)
+                            .withDateResponse(LocalDateTime.now(ZoneId.of(ZONE_INFO)))
+                            .withMessage(msgListEmpty)
                             .withStatusHttp(NOT_FOUND.value())
                             .build();
                 }
@@ -86,17 +116,17 @@ public class LogServiceImpl implements LogService {
 
             return save.get()
                     ? ResponseDTO.builder()
-                    .withData("Quantidade de dados adicionados: ".concat(String.valueOf(logEntities.size())))
+                    .withData(msgCountDataAdd(String.valueOf(logEntities.size())))
                     .withError(null)
-                    .withDateResponse(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))
-                    .withMessage("Logs em massa cadastrados com sucesso!")
+                    .withDateResponse(LocalDateTime.now(ZoneId.of(ZONE_INFO)))
+                    .withMessage(msgBulkInsertSuccess)
                     .withStatusHttp(CREATED.value())
                     .build()
                     : ResponseDTO.builder()
                     .withData(null)
                     .withError(NOT_IMPLEMENTED.getReasonPhrase())
-                    .withDateResponse(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))
-                    .withMessage("Não foi possivel cadastrar logs em massa, pois a lista esta vazia.")
+                    .withDateResponse(LocalDateTime.now(ZoneId.of(ZONE_INFO)))
+                    .withMessage(msgBulkInsertFailListEmpty)
                     .withStatusHttp(NOT_IMPLEMENTED.value())
                     .build();
 
@@ -106,8 +136,8 @@ public class LogServiceImpl implements LogService {
             return ResponseDTO.builder()
                     .withData(null)
                     .withError(e.getCause())
-                    .withDateResponse(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))
-                    .withMessage("Lista vazia.")
+                    .withDateResponse(LocalDateTime.now(ZoneId.of(ZONE_INFO)))
+                    .withMessage(msgListEmpty)
                     .withStatusHttp(NOT_FOUND.value())
                     .build();
         }
@@ -122,15 +152,15 @@ public class LogServiceImpl implements LogService {
             if (logDTO.getId() != null) {
                 AtomicReference<Boolean> update = new AtomicReference<>(false);
                 logDAO.findByIdLog(logDTO.getId()).ifPresent(logEntity -> {
-                    update.set(checkUpdate(logDTO, logEntity));
+                    update.set(chkUpdate(logDTO, logEntity));
                 });
 
                 if (!update.get()) {
                     return ResponseDTO.builder()
                             .withData(null)
                             .withError(NOT_MODIFIED.getReasonPhrase())
-                            .withDateResponse(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))
-                            .withMessage("Não há dados para serem alterados.")
+                            .withDateResponse(LocalDateTime.now(ZoneId.of(ZONE_INFO)))
+                            .withMessage(msgNothingModify)
                             .withStatusHttp(NOT_MODIFIED.value())
                             .build();
                 }
@@ -152,15 +182,15 @@ public class LogServiceImpl implements LogService {
                 ? ResponseDTO.builder()
                 .withData(logDTO.getId())
                 .withError(null)
-                .withDateResponse(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))
+                .withDateResponse(LocalDateTime.now(ZoneId.of(ZONE_INFO)))
                 .withMessage(customMsgSuccess("Log", logDTO.getId() == null ? "cadastrado" : "atualizado"))
                 .withStatusHttp(logDTO.getId() == null ? CREATED.value() : OK.value())
                 .build()
                 : ResponseDTO.builder()
                 .withData(null)
                 .withError(NOT_IMPLEMENTED.getReasonPhrase())
-                .withDateResponse(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))
-                .withMessage("Não foi possivel cadastrar log.")
+                .withDateResponse(LocalDateTime.now(ZoneId.of(ZONE_INFO)))
+                .withMessage(msgNotSave)
                 .withStatusHttp(NOT_IMPLEMENTED.value())
                 .build();
     }
@@ -187,15 +217,15 @@ public class LogServiceImpl implements LogService {
                 ? ResponseDTO.builder()
                 .withData(new PageImpl<>(logEntitieLogDTOList))
                 .withError(null)
-                .withDateResponse(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))
-                .withMessage("Lista de logs retornado com sucesso!")
+                .withDateResponse(LocalDateTime.now(ZoneId.of(ZONE_INFO)))
+                .withMessage(msgListSuccess)
                 .withStatusHttp(OK.value())
                 .build()
                 : ResponseDTO.builder()
                 .withData(null)
                 .withError(NO_CONTENT.getReasonPhrase())
-                .withDateResponse(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))
-                .withMessage("Não há logs cadastrados.")
+                .withDateResponse(LocalDateTime.now(ZoneId.of(ZONE_INFO)))
+                .withMessage(msgListNotContent)
                 .withStatusHttp(NO_CONTENT.value())
                 .build();
     }
@@ -225,15 +255,15 @@ public class LogServiceImpl implements LogService {
                 ? ResponseDTO.builder()
                 .withData(new PageImpl<>(logEntitieLogDTOList))
                 .withError(null)
-                .withDateResponse(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))
-                .withMessage("Consulta de logs do user agent " + userAgent + " retornado com sucesso!")
+                .withDateResponse(LocalDateTime.now(ZoneId.of(ZONE_INFO)))
+                .withMessage(msgConsult("User Agent", userAgent, true))
                 .withStatusHttp(OK.value())
                 .build()
                 : ResponseDTO.builder()
                 .withData(null)
                 .withError(NO_CONTENT.getReasonPhrase())
-                .withDateResponse(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))
-                .withMessage("Não há logs cadastrados para o user agent " + userAgent + ".")
+                .withDateResponse(LocalDateTime.now(ZoneId.of(ZONE_INFO)))
+                .withMessage(msgConsult("User Agent", userAgent, false))
                 .withStatusHttp(NO_CONTENT.value())
                 .build();
     }
@@ -263,15 +293,15 @@ public class LogServiceImpl implements LogService {
                 ? ResponseDTO.builder()
                 .withData(new PageImpl<>(logEntitieLogDTOList))
                 .withError(null)
-                .withDateResponse(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))
-                .withMessage("Consulta de logs na faixa de IP " + ip + " retornado com sucesso!")
+                .withDateResponse(LocalDateTime.now(ZoneId.of(ZONE_INFO)))
+                .withMessage(msgConsult("IP", ip, true))
                 .withStatusHttp(OK.value())
                 .build()
                 : ResponseDTO.builder()
                 .withData(null)
                 .withError(NO_CONTENT.getReasonPhrase())
-                .withDateResponse(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))
-                .withMessage("Não há logs cadastrados para o IP " + ip + ".")
+                .withDateResponse(LocalDateTime.now(ZoneId.of(ZONE_INFO)))
+                .withMessage(msgConsult("IP", ip, false))
                 .withStatusHttp(NO_CONTENT.value())
                 .build();
     }
@@ -293,15 +323,15 @@ public class LogServiceImpl implements LogService {
                         .withActive(log.get().getActive())
                         .build())
                 .withError(null)
-                .withDateResponse(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))
-                .withMessage("item do ID" + id + " retornado com sucesso!")
+                .withDateResponse(LocalDateTime.now(ZoneId.of(ZONE_INFO)))
+                .withMessage(msgConsult("ID", id, true))
                 .withStatusHttp(OK.value())
                 .build()
                 : ResponseDTO.builder()
                 .withData(null)
                 .withError(NO_CONTENT.getReasonPhrase())
-                .withDateResponse(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))
-                .withMessage("Não foi possivel retornar o item do ID " + id + ".")
+                .withDateResponse(LocalDateTime.now(ZoneId.of(ZONE_INFO)))
+                .withMessage(msgConsult("ID", id, false))
                 .withStatusHttp(NO_CONTENT.value())
                 .build();
 
@@ -315,15 +345,15 @@ public class LogServiceImpl implements LogService {
                 ? ResponseDTO.builder()
                 .withData(id)
                 .withError(null)
-                .withDateResponse(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))
-                .withMessage("Item do ID " + id + " deletado com sucesso!")
+                .withDateResponse(LocalDateTime.now(ZoneId.of(ZONE_INFO)))
+                .withMessage(msgDelete("ID", id, true))
                 .withStatusHttp(ACCEPTED.value())
                 .build()
                 : ResponseDTO.builder()
                 .withData(null)
                 .withError(NOT_ACCEPTABLE.getReasonPhrase())
-                .withDateResponse(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))
-                .withMessage("Ação para deletar item do ID " + id + " não foi aceito.")
+                .withDateResponse(LocalDateTime.now(ZoneId.of(ZONE_INFO)))
+                .withMessage(msgDelete("ID", id, false))
                 .withStatusHttp(NOT_ACCEPTABLE.value())
                 .build();
     }
@@ -335,11 +365,8 @@ public class LogServiceImpl implements LogService {
             return ResponseDTO.builder()
                     .withData(countLog)
                     .withError(null)
-                    .withDateResponse(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))
-                    .withMessage(countLog > 0
-                            ? "Você tem " + countLog + " logs registrados no verbo http " + request + "."
-                            : "Você não tem logs registrados no verbo http " + request + "."
-                    )
+                    .withDateResponse(LocalDateTime.now(ZoneId.of(ZONE_INFO)))
+                    .withMessage(msgCounts("verbo http", request, countLog, true))
                     .withStatusHttp(OK.value())
                     .build();
 
@@ -347,32 +374,10 @@ public class LogServiceImpl implements LogService {
             return ResponseDTO.builder()
                     .withData(null)
                     .withError(e.getMessage())
-                    .withDateResponse(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))
-                    .withMessage("Não foi possivel retornar os logs do verbo http " + request + ".")
+                    .withDateResponse(LocalDateTime.now(ZoneId.of(ZONE_INFO)))
+                    .withMessage(msgCounts("verbo http", request, 0, false))
                     .withStatusHttp(INTERNAL_SERVER_ERROR.value())
                     .build();
-        }
-    }
-
-    private Boolean checkUpdate(LogDTO logDTO, LogEntity logEntity) {
-        if (logDTO.getActive().equals(logEntity.getActive())
-                && logDTO.getDateTime().equals(logEntity.getDateTime())
-                && logDTO.getFileName().equals(logEntity.getFileName())
-                && logDTO.getIp().equals(logEntity.getIp())
-                && logDTO.getRequest().equals(logEntity.getRequest())
-                && logDTO.getStatusHttp().equals(logEntity.getStatusHttp())
-                && logDTO.getUserAgent().equals(logEntity.getUserAgent())) {
-            return false;
-        } else if (logDTO.getActive().equals(logEntity.getActive())
-                || logDTO.getDateTime().equals(logEntity.getDateTime())
-                || logDTO.getFileName().equals(logEntity.getFileName())
-                || logDTO.getIp().equals(logEntity.getIp())
-                || logDTO.getRequest().equals(logEntity.getRequest())
-                || logDTO.getStatusHttp().equals(logEntity.getStatusHttp())
-                || logDTO.getUserAgent().equals(logEntity.getUserAgent())) {
-            return true;
-        } else {
-            return true;
         }
     }
 }

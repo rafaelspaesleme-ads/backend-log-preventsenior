@@ -4,13 +4,11 @@ import br.com.preventsr.logs.resources.v1.dto.FileLogDTO;
 import br.com.preventsr.logs.resources.v1.dto.LogDTO;
 import br.com.preventsr.logs.resources.v1.dto.ResponseDTO;
 import br.com.preventsr.logs.services.cli.LogService;
-import br.com.preventsr.logs.utils.functions.TemplatesFunction;
 import io.swagger.annotations.*;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import springfox.documentation.annotations.ApiIgnore;
 
 @RestController
 @RequestMapping(value = "/logs")

@@ -9,14 +9,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static br.com.preventsr.logs.utils.functions.ChecksFunctions.chkPageable;
 
 @Component
 public class LogDAOImpl implements LogDAO {
@@ -78,24 +74,56 @@ public class LogDAOImpl implements LogDAO {
 
     @Override
     public List<LogEntity> listAllLog() {
-        List<LogEntity> logEntities = new ArrayList<>();
-        logJDBCRepository.findAll().forEach(logEntities::add);
-        return logEntities;
+        try {
+            List<LogEntity> logEntities = new ArrayList<>();
+            logJDBCRepository.findAll().forEach(logEntities::add);
+            return logEntities;
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return Collections.emptyList();
+        }
     }
 
     @Override
     public Page<LogEntity> listAllByActiveLog(Integer page, Integer linesPerPage, String orderBy, String direction, Long limited) {
-        return new PageImpl<>(logJDBCRepository.findAllByActive(true, buildPageable(page, linesPerPage, orderBy, direction)).stream().limit(limited).collect(Collectors.toList()));
+        try {
+            return new PageImpl<>(logJDBCRepository
+                    .findAllByActive(true, chkPageable(page, linesPerPage, orderBy, direction))
+                    .stream()
+                    .limit(limited)
+                    .collect(Collectors.toList()));
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return Page.empty();
+        }
     }
 
     @Override
     public Page<LogEntity> listAllByUserAgentLog(String userAgent, Integer page, Integer linesPerPage, String orderBy, String direction, Long limited) {
-        return new PageImpl<>(logJDBCRepository.findAllByUserAgentContains(userAgent, buildPageable(page, linesPerPage, orderBy, direction)).stream().limit(limited).collect(Collectors.toList()));
+        try {
+            return new PageImpl<>(logJDBCRepository
+                    .findAllByUserAgentContains(userAgent, chkPageable(page, linesPerPage, orderBy, direction))
+                    .stream()
+                    .limit(limited)
+                    .collect(Collectors.toList()));
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return Page.empty();
+        }
     }
 
     @Override
     public Page<LogEntity> listAllByIpLog(String ipLog, Integer page, Integer linesPerPage, String orderBy, String direction, Long limited) {
-        return new PageImpl<>(logJDBCRepository.findAllByIpContains(ipLog, buildPageable(page, linesPerPage, orderBy, direction)).stream().limit(limited).collect(Collectors.toList()));
+        try {
+            return new PageImpl<>(logJDBCRepository
+                    .findAllByIpContains(ipLog, chkPageable(page, linesPerPage, orderBy, direction))
+                    .stream()
+                    .limit(limited)
+                    .collect(Collectors.toList()));
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return Page.empty();
+        }
     }
 
     @Override
@@ -116,10 +144,11 @@ public class LogDAOImpl implements LogDAO {
 
     @Override
     public Long countLogsByRequest(String request) {
-        return (long) logJDBCRepository.findAllByActiveAndRequestContains(true, request).size();
-    }
-
-    private PageRequest buildPageable(Integer page, Integer linesPerPage, String orderBy, String direction) {
-        return PageRequest.of(page, linesPerPage, Sort.Direction.valueOf(direction), orderBy);
+        try {
+            return (long) logJDBCRepository.findAllByActiveAndRequestContains(true, request).size();
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return 0L;
+        }
     }
 }

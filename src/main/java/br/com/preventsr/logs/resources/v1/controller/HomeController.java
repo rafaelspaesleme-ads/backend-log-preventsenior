@@ -1,6 +1,6 @@
 package br.com.preventsr.logs.resources.v1.controller;
 
-import br.com.preventsr.logs.utils.functions.TemplatesFunction;
+import br.com.preventsr.logs.utils.functions.TemplatesFunctions;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,10 +11,10 @@ import springfox.documentation.annotations.ApiIgnore;
 @RestController
 @RequestMapping(value = "/")
 public class HomeController {
-    private final TemplatesFunction templatesFunction;
+    private final TemplatesFunctions templatesFunctions;
 
-    public HomeController(TemplatesFunction templatesFunction) {
-        this.templatesFunction = templatesFunction;
+    public HomeController(TemplatesFunctions templatesFunctions) {
+        this.templatesFunctions = templatesFunctions;
     }
 
 
@@ -22,7 +22,7 @@ public class HomeController {
     @CrossOrigin
     @GetMapping(value = "/")
     public ResponseEntity<?> start() {
-        String s = templatesFunction.initalPageHtml();
+        String s = templatesFunctions.initalPageHtml();
         return s != null ? ResponseEntity.ok(s) : ResponseEntity.noContent().build();
     }
 

@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-public class TemplatesFunction {
+public class TemplatesFunctions {
 
     @Value("${spring.profiles.active}")
     public String profile;
